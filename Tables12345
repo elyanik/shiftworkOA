@@ -1,0 +1,753 @@
+
+/*Removing withdrawls*/
+data firstset;
+	set box.firstset;
+	run;
+proc sort data=firstset; by n_eid; run;
+data wd;
+	set box.withdrawals_2023;
+	wd=1;
+	run;
+proc sort data=wd; by n_eid; run;
+data firstset2;
+	merge firstset (IN=A) wd (IN=B);
+	if A;
+	by n_eid;
+	if wd=1 then delete;
+	run;
+
+/*now down to 502,543 people after excluding participants that have chosen to withdraw*/
+
+proc sort data=shift.official_TKA_analysis; by n_eid; run;
+proc sort data=shift.official_THA_analysis; by n_eid; run;
+proc sort data=shift.official_oa_hip; by n_eid; run;
+proc sort data=shift.official_oa_knee; by n_eid; run;
+
+proc freq data=shift.shiftwork; tables p826_i0 p3426_i0; run;
+
+data shift.shiftwork2;
+	set shift.shiftwork;
+	rename eid=n_eid;
+	if p826_i0="Do not know" | p826_i0="Prefer not t" then p826_i0="";
+	if p826_i0="" & p3426_i0="Always" then p826_i0="Always"; /*if job always involves always night shift work, then it always involves shift work (even if "did not know" shift work response)*/
+	if p826_i0="Never/rarely" then bishift=0;
+	else if p826_i0="Sometimes" | p826_i0="Usually" | p826_i0="Always" then bishift=1;
+	if p3426_i0="" & p826_i0="Never/rarely" then nightshift=1;
+	else if p3426_i0="Never/rarely" then nightshift=1;
+	else if p3426_i0="Sometimes" then nightshift=2;
+	else if p3426_i0="Usually" then nightshift=3;
+	else if p3426_i0="Always" then nightshift=4;
+	if nightshift=1 then binightshift=0;
+	else if nightshift=2 | nightshift=3 | nightshift=3 | nightshift=4 then binightshift=1;
+	if binightshift=1 & bishift=. then bishift=1; /*if job always involves night shift work, then it involves shift work (even if "did not know" shift work response)*/
+	if bishift=0 then shiftcat="No shift";
+	else if bishift=1 & binightshift=0 then shiftcat="Day shift";
+	else if binightshift=1 then shiftcat="Night shift";
+	run;
+
+/*slight differences in total numbers because some people responded "Do Not Know" or "Prefer Not to Answer" to shift work question, but provided a response to night shift work question*/
+proc freq data=shift.shiftwork2; tables p826_i0 nightshift shiftcat; run; 
+
+
+/*Categorical Variables*/
+/*Table 1*/
+	/*n=502363*/
+		/*sex race education BMI*/
+
+proc freq data=shift.shiftworkdemo_standwalk; tables n_31_0_0 racecat edcat bmicat n_1180_0_0 n_1200_0_0/missing; run;
+
+proc univariate data=shift.shiftworkdemo_standwalk;
+	var n_21003_0_0 n_189_0_0;
+	run;
+
+/*Table 2: Work characteristics*/
+proc freq data=shift.shiftworkdemo_standwalk; tables n_806_0_0 manwork nightshift shiftcat p826_i0; run;
+
+proc sort data=shift.shiftworkdemo_standwalk; by n_eid; run;
+proc sort data=shift.allsleep; by n_eid; run;
+data shiftworkdemo_sleep;
+	merge shift.shiftworkdemo_standwalk (IN=A) shift.allsleep (IN=B);
+	by n_eid;
+	if A;
+	sleep_dur = n_1160_0_0;
+		label sleep_dur = 'Sleep duration';
+		if n_1160_0_0=-1 | n_1160_0_0=-3 then sleep_dur ='';
+		if n_1160_0_0 < 6 then sleep_dur = 5; 
+			else if n_1160_0_0 = 6 then sleep_dur = 6;
+			else if n_1160_0_0 = 7 then sleep_dur = 7;
+			else if n_1160_0_0 = 8 then sleep_dur = 8;
+			else if n_1160_0_0 > 8 then sleep_dur = 9;
+	guim = n_1170_0_0;
+		label guim = 'Getting up in morning';
+		if n_1170_0_0=-1 | n_1170_0_0=-3 then guim ='';
+		if n_1170_0_0 = 1 then guim = 1;
+			else if n_1170_0_0 = 2 then guim = 2;
+			else if n_1170_0_0 = 3 then guim = 3;
+			else if n_1170_0_0 = 4 then guim = 4;
+	mepc = n_1180_0_0;
+		label mepc = 'Morning/evening person (chronotype)';
+		if n_1180_0_0=-1 | n_1180_0_0=-3 then mepc ='';
+		if n_1180_0_0 = 1 then mepc = 1;
+			else if n_1180_0_0 = 2 then mepc = 2;
+			else if n_1180_0_0 = 3 then mepc = 3;
+			else if n_1180_0_0 = 4 then mepc = 4;
+	ndd = n_1190_0_0;
+		label ndd = 'Nap during day';
+		if n_1190_0_0=-1 | n_1190_0_0=-3 then ndd ='';
+		if n_1190_0_0 = 1 then ndd = 1;
+			else if n_1190_0_0 = 2 then ndd = 2;
+			else if n_1190_0_0 = 3 then ndd = 3;
+	sl_in = n_1200_0_0;
+		label sl_in = 'Sleeplessness / insomnia';
+		if n_1200_0_0=-1 | n_1200_0_0=-3 then sl_in ='';
+		if n_1200_0_0 = 1 then sl_in = 1;
+			else if n_1200_0_0 = 2 then sl_in = 2;
+			else if n_1200_0_0 = 3 then sl_in = 3;
+	snoring = n_1210_0_0;
+		label snoring = 'Snoring';
+		if n_1210_0_0=-1 | n_1210_0_0=-3 then snoring ='';
+		if n_1210_0_0 = 1 then snoring = 1;
+			else if n_1210_0_0 = 2 then snoring = 2;
+	dd_s = n_1220_0_0;
+		label dd_s = 'Daytime dozing / sleeping';
+		if n_1220_0_0=-1 | n_1220_0_0=-3 then dd_s ='';
+		if n_1220_0_0 = 0 then dd_s = 0;
+			else if n_1220_0_0 = 1 then dd_s = 1;
+			else if n_1220_0_0=2 | n_1220_0_0=3 then dd_s = '2';
+	run;
+
+/*Table 1 Sleep Variables*/
+proc freq data=shiftworkdemo_sleep; tables mepc sl_in; run;
+proc univariate data=shiftworkdemo_sleep;
+	var sleep_dur;
+	run;
+
+
+/*Table 3 Results*/
+%MACRO cox_cat_adj (fit= , par= , dat=  , year= , op=, var= , ref=, title= );
+	ODS output 	FitStatistics= &fit
+				ParameterEstimates= &par;
+	proc phreg data=&dat;
+	class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") &var (ref=&ref) / param=ref order=internal;
+	model &year*&op(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 &var /RL  TIES=EFRON;
+	title &title;
+	run;
+	ODS output close;
+	%MEND;
+	proc sort data=shift.shiftwork2; by n_eid; run;
+
+
+/*Create datasets for each outcome with shiftwork speific variables*/
+		/*TKA*/
+data shift.official_TKA_analysis_sw;
+			merge shift.official_TKA_analysis (IN=A) shift.shiftwork2 (IN=B);
+			if A;
+			by n_eid;
+			run;
+
+data shift.official_oa_knee_sw;
+			merge shift.official_oa_knee (IN=A) shift.shiftwork2 (IN=B);
+			if A;
+			by n_eid;
+			run;
+
+data shift.official_THA_analysis_sw;
+			merge shift.official_THA_analysis (IN=A) shift.shiftwork2 (IN=B);
+			if A;
+			by n_eid;
+			run;
+
+data shift.official_oa_hip_sw;
+			merge shift.official_oa_hip (IN=A) shift.shiftwork2 (IN=B);
+			if A;
+			by n_eid;
+			run;
+
+/*Association tests for shiftwork and outcome risk*/
+	/*TKA*/
+	/*Table 3, Models not adjusted for BMI*/
+	/*Shift work frequency*/
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_TKA_analysis_sw, year=years_fu_TKA, op=TKA, var=p826_i0, ref='Never/rarely', title='Adjusted Cox model for shift work frequency');
+
+	/*Night shift work frequency*/
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_TKA_analysis_sw, year=years_fu_TKA, op=TKA, var=nightshift, ref='1', title='Adjusted Cox model for night shift work frequency');
+
+	/*Shift work type: Day shift work higher risk, night shift work highest risk*/
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_TKA_analysis_sw, year=years_fu_TKA, op=TKA, var=shiftcat, ref='No shift', title='Adjusted Cox model for night shift work frequency');
+
+	/*Table 4, Models adjusted for BMI*/
+		proc phreg data=shift.official_TKA_analysis_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') p826_i0(ref='Never/rarely') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend p826_i0 manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+				
+		proc phreg data=shift.official_TKA_analysis_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') nightshift(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend nightshift manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+				
+		proc phreg data=shift.official_TKA_analysis_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') shiftcat(ref="No shift") manwork1(ref="1") standwork1(ref="1") bmicat(ref='1' )/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend shiftcat manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+
+
+/*THA*/
+		/*Table 3, Models not adjusted for BMI*/
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_THA_analysis_sw, year=years_fu_THA, op=THA, var=p826_i0, ref='Never/rarely', title='Adjusted Cox model for shift work frequency');
+				
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_THA_analysis_sw, year=years_fu_THA, op=THA, var=nightshift, ref='1', title='Adjusted Cox model for night shift work frequency');
+
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_THA_analysis_sw, year=years_fu_THA, op=THA, var=shiftcat, ref='No shift', title='Adjusted Cox model for night shift work frequency');
+
+		/*Table 4, Models adjusted for BMI*/
+		proc phreg data=shift.official_THA_analysis_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') p826_i0(ref='Never/rarely') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend p826_i0 manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+				
+		proc phreg data=shift.official_THA_analysis_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') nightshift(ref="1") manwork1(ref="1") standwork1(ref="1") bmicat(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend nightshift manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+				
+		proc phreg data=shift.official_THA_analysis_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') shiftcat(ref="No shift") manwork1(ref="1") standwork1(ref="1") bmicat(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend shiftcat manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+
+
+/*Knee OA*/
+			/*Table 3, Models not adjusted for BMI*/
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_oa_knee_sw, year=years_fu_kneeOA, op=knee_dx, var=p826_i0, ref='Never/rarely', title='Adjusted Cox model for shift work frequency');
+
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_oa_knee_sw, year=years_fu_kneeOA, op=knee_dx, var=nightshift, ref='1', title='Adjusted Cox model for night shift work frequency');
+
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_oa_knee_sw, year=years_fu_kneeOA, op=knee_dx, var=shiftcat, ref='No shift', title='Adjusted Cox model for night shift work frequency');
+
+			/*Table 4, Models adjusted for BMI*/
+		proc phreg data=shift.official_oa_knee_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') p826_i0(ref='Never/rarely') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1' )/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend p826_i0 manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+
+		proc phreg data=shift.official_oa_knee_sw;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') nightshift(ref="1") manwork1(ref="1") standwork1(ref="1") bmicat (ref='1' )/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend nightshift manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+
+		proc phreg data=shift.official_oa_knee_sw;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') shiftcat (ref="No shift") manwork1(ref="1") standwork1(ref="1") bmicat(ref='1' )/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend shiftcat manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+	
+		/*Hip OA*/
+			/*Table 3, Models not adjusted for BMI*/
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_oa_hip_sw, year=years_fu_hipOA, op=hip_dx, var=p826_i0, ref='Never/rarely', title='Adjusted Cox model for shift work frequency');
+
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_oa_hip_sw, year=years_fu_hipOA, op=hip_dx, var=nightshift, ref='1', title='Adjusted Cox model for night shift work frequency');
+
+%cox_cat_adj (fit=fit3, par=par3, dat=shift.official_oa_hip_sw, year=years_fu_hipOA, op=hip_dx, var=shiftcat, ref='No shift', title='Adjusted Cox model for night shift work frequency');
+
+			/*Table 4, Models adjusted for BMI*/
+		proc phreg data=shift.official_oa_hip_sw;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') p826_i0(ref='Never/rarely') manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1' )/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend p826_i0 manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+
+		proc phreg data=shift.official_oa_hip_sw;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') nightshift(ref="1") manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1' )/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend nightshift manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+
+		proc phreg data=shift.official_oa_hip_sw;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') shiftcat(ref="No shift") manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1' )/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend shiftcat manwork1 standwork1 bmicat/RL  TIES=EFRON;
+				run;
+
+/*Sleep datasets for Tables 3 & 4*/
+/*Sleep + outcome datasets recoded + labeled with all "Perfer Not to Answer" and "Do not know" answer coded to be missing*/
+/*Sleep duration is categorized into <6 hours, 6,7,8, and >8 hours of sleep which matches the categories used by other papers of this nature*/
+/*Daytime dozing / sleeping combined "Often" and "All the time" into one category due to low number of participants in "All of the time" category*/
+
+	/*Knee OA*/
+		data shift.oa_knee_to_use_sleep;
+			set shift.oa_knee_to_use;
+			label sleep_dur = "Sleep duration";
+				sleep_dur = n_1160_0_0;
+				if n_1160_0_0=-1 | n_1160_0_0=-3 then sleep_dur =.;
+				if n_1160_0_0 < 6 then sleep_dur = "5"; 
+					else if n_1160_0_0 = 6 then sleep_dur = "6";
+					else if n_1160_0_0 = 7 then sleep_dur = "7";
+					else if n_1160_0_0 = 8 then sleep_dur = "8";
+					else if n_1160_0_0 > 8 then sleep_dur = "9";
+			guim = n_1170_0_0;
+			if n_1170_0_0=-1 | n_1170_0_0=-3 then guim ='';
+			label guim = 'Getting up in morning';
+			label mepc = 'Morning/evening person (chronotype)';
+				mepc = n_1180_0_0;
+				if n_1180_0_0=-1 | n_1180_0_0=-3 then mepc ='';
+			label ndd = 'Nap during day';
+				ndd = n_1190_0_0;
+				if n_1190_0_0=-1 | n_1190_0_0=-3 then ndd ='';
+			label sl_in = 'Sleeplessness / insomnia';
+				sl_in = n_1200_0_0;
+				if n_1200_0_0=-1 | n_1200_0_0=-3 then sl_in ='';
+			label snoring = 'Snoring';
+				snoring = n_1210_0_0;
+				if n_1210_0_0=-1 | n_1210_0_0=-3 then snoring ='';
+			label dd_s = 'Daytime dozing / sleeping';
+				dd_s = n_1220_0_0;
+				if n_1220_0_0=-1 | n_1220_0_0=-3 then dd_s ='';
+				if n_1220_0_0=2 | n_1220_0_0=3 then dd_s = '2';
+		run;
+
+	/*TKA*/
+		data shift.tka_to_use_sleep;
+			set shift.tka_to_use;
+			label sleep_dur = "Sleep duration";
+				sleep_dur = n_1160_0_0;
+				if n_1160_0_0=-1 | n_1160_0_0=-3 then sleep_dur =.;
+					if n_1160_0_0 < 6 then sleep_dur = "5"; 
+					else if n_1160_0_0 = 6 then sleep_dur = "6";
+					else if n_1160_0_0 = 7 then sleep_dur = "7";
+					else if n_1160_0_0 = 8 then sleep_dur = "8";
+					else if n_1160_0_0 > 8 then sleep_dur = "9";
+			guim = n_1170_0_0;
+				if n_1170_0_0=-1 | n_1170_0_0=-3 then guim ='';
+				label guim = 'Getting up in morning';
+			label mepc = 'Morning/evening person (chronotype)';
+				mepc = n_1180_0_0;
+				if n_1180_0_0=-1 | n_1180_0_0=-3 then mepc ='';
+			label ndd = 'Nap during day';
+				ndd = n_1190_0_0;
+				if n_1190_0_0=-1 | n_1190_0_0=-3 then ndd ='';
+			label sl_in = 'Sleeplessness / insomnia';
+				sl_in = n_1200_0_0;
+				if n_1200_0_0=-1 | n_1200_0_0=-3 then sl_in ='';
+			label snoring = 'Snoring';
+				  snoring = n_1210_0_0;
+				if n_1210_0_0=-1 | n_1210_0_0=-3 then snoring ='';
+			label dd_s = 'Daytime dozing / sleeping';
+				dd_s = n_1220_0_0;
+				if n_1220_0_0=-1 | n_1220_0_0=-3 then dd_s ='';
+				if n_1220_0_0=2 | n_1220_0_0=3 then dd_s = '2';
+		run;
+
+	/*Hip OA*/
+		data shift.oa_hip_to_use_sleep;
+			set shift.oa_hip_to_use;
+			label sleep_dur = "Sleep duration";
+				sleep_dur = n_1160_0_0;
+				if n_1160_0_0=-1 | n_1160_0_0=-3 then sleep_dur =.;
+				if n_1160_0_0 < 6 then sleep_dur = "5"; 
+					else if n_1160_0_0 = 6 then sleep_dur = "6";
+					else if n_1160_0_0 = 7 then sleep_dur = "7";
+					else if n_1160_0_0 = 8 then sleep_dur = "8";
+					else if n_1160_0_0 > 8 then sleep_dur = "9";
+			guim = n_1170_0_0;
+				if n_1170_0_0=-1 | n_1170_0_0=-3 then guim ='';
+				label guim = 'Getting up in morning';
+			label mepc = 'Morning/evening person (chronotype)';
+				mepc = n_1180_0_0;
+				if n_1180_0_0=-1 | n_1180_0_0=-3 then mepc ='';
+			label ndd = 'Nap during day';
+				ndd = n_1190_0_0;
+				if n_1190_0_0=-1 | n_1190_0_0=-3 then ndd ='';
+			label sl_in = 'Sleeplessness / insomnia';
+				sl_in = n_1200_0_0;
+				if n_1200_0_0=-1 | n_1200_0_0=-3 then sl_in ='';
+			label snoring = 'Snoring';
+				snoring = n_1210_0_0;
+				if n_1210_0_0=-1 | n_1210_0_0=-3 then snoring ='';
+			label dd_s = 'Daytime dozing / sleeping';
+				dd_s = n_1220_0_0;
+				if n_1220_0_0=-1 | n_1220_0_0=-3 then dd_s ='';
+				if n_1220_0_0=2 | n_1220_0_0=3 then dd_s = '2';
+		run;
+
+	/*THA*/
+		data shift.tha_to_use_sleep;
+			set shift.tha_to_use;
+			label sleep_dur = "Sleep duration";
+				sleep_dur = n_116_0_0;
+				if n_1160_0_0=-1 | n_1160_0_0=-3 then sleep_dur =.;
+				if n_1160_0_0 < 6 then sleep_dur = "5"; 
+					else if n_1160_0_0 = 6 then sleep_dur = "6";
+					else if n_1160_0_0 = 7 then sleep_dur = "7";
+					else if n_1160_0_0 = 8 then sleep_dur = "8";
+					else if n_1160_0_0 > 8 then sleep_dur = "9";
+			guim = n_1170_0_0;
+				if n_1170_0_0=-1 | n_1170_0_0=-3 then guim ='';
+				label guim = 'Getting up in morning';
+			label mepc = 'Morning/evening person (chronotype)';
+				mepc = n_1180_0_0;
+				if n_1180_0_0=-1 | n_1180_0_0=-3 then mepc ='';
+			label ndd = 'Nap during day';
+				ndd = n_1190_0_0;
+				if n_1190_0_0=-1 | n_1190_0_0=-3 then ndd ='';
+			label sl_in = 'Sleeplessness/insomnia';
+				sl_in = n_1200_0_0;
+				if n_1200_0_0=-1 | n_1200_0_0=-3 then sl_in ='';
+			label snoring = 'Snoring';
+				snoring = n_1210_0_0;
+				if n_1210_0_0=-1 | n_1210_0_0=-3 then snoring ='';
+			label dd_s = 'Daytime dozing/sleeping';
+				dd_s = n_1220_0_0;
+				if n_1220_0_0=-1 | n_1220_0_0=-3 then dd_s ='';
+				if n_1220_0_0=2 | n_1220_0_0=3 then dd_s = '2';
+		run;
+
+/*Sleep variable associations*/
+	/*Morning/evening person (chronotype)*/
+		/*Table 3, Models not adjusted for BMI*/
+			/*Knee OA*/
+				proc phreg data=shift.oa_knee_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+
+			/*TKA*/
+				proc phreg data=shift.tka_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+/*Check interaction with night shift work*/
+proc phreg data=shift.tka_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc nightshift mepc*nightshift/RL  TIES=EFRON;
+				run; 
+
+			/*Hip OA*/
+				proc phreg data=shift.oa_hip_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+
+			/*THA*/
+				proc phreg data=shift.tha_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+
+		/*Table 4, Models adjusted for BMI*/
+			/*Knee OA*/
+				proc phreg data=shift.oa_knee_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+			/*TKA*/
+				proc phreg data=shift.tka_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+			/*Hip OA*/
+				proc phreg data=shift.oa_hip_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+			/*THA*/
+				proc phreg data=shift.tha_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+/*Sleeplessness/insomnia*/
+		/*Table 3, Models not adjusted for BMI*/
+			/*Knee OA*/
+				proc phreg data=shift.oa_knee_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+
+			/*TKA*/
+				proc phreg data=shift.tka_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+
+			/*Hip OA*/
+				proc phreg data=shift.oa_hip_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+
+			/*THA*/
+				proc phreg data=shift.tha_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+
+		/*Table 4, Models adjusted for BMI*/
+			/*Knee OA*/
+				proc phreg data=shift.oa_knee_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+			/*TKA*/
+				proc phreg data=shift.tka_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+			/*Hip OA*/
+				proc phreg data=shift.oa_hip_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+			/*THA*/
+				proc phreg data=shift.tha_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+/*Sleep duration*/
+		/*Table 3, Models not adjusted for BMI*/
+			/*Knee OA*/
+				proc phreg data=shift.oa_knee_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+
+			/*TKA*/
+				proc phreg data=shift.tka_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+
+			/*Hip OA*/
+				proc phreg data=shift.oa_hip_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+
+			/*THA*/
+				proc phreg data=shift.tha_to_use_sleep;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+
+		/*Table 4, Models adjusted for BMI*/
+			/*Knee OA*/
+				proc phreg data=check.oa_knee_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
+
+			/*TKA*/
+				proc phreg data=check.tka_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
+
+			/*Hip OA*/
+				proc phreg data=check.oa_hip_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
+
+			/*THA*/
+				proc phreg data=check.tha_to_use_sleep;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
+
+/*****Table 5, Exclude people with chronic pain*****/
+
+/*Knee OA*/
+data oa_knee_nopain;
+	merge shift.oa_knee_to_use_sleep (IN=A) ukb.hipkneepain (IN=B);
+	by n_eid;
+	if A;
+	if n_3773_0_0=1 then delete; /*N=19848 excluded*/
+	run;
+
+proc freq data=oa_knee_nopain;
+	tables knee_dx; /*4825 knee OA diagnoses remain*/
+	run;
+	/*Morning/evening person (chronotype)*/
+		/*Models not adjusted for BMI*/
+			proc phreg data=oa_knee_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_knee_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+	/*Sleeplessness/insomnia*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_knee_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_knee_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") bmicat (ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+	/*Sleep duration*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_knee_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1 (ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_knee_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat (ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_kneeOA*knee_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
+
+/*Hip OA*/
+data oa_hip_nopain;
+	merge shift.oa_hip_to_use_sleep (IN=A) ukb.hipkneepain (IN=B);
+	by n_eid;
+	if A;
+	if n_3414_0_0=1 then delete; /*N=10016 excluded*/
+	run;
+
+proc freq data=oa_hip_nopain;
+	tables hip_dx; /*3797 hip OA diagnoses remain*/
+	run;
+
+	/*Morning/evening person (chronotype)*/
+		/*Models not adjusted for BMI*/
+			/*Hip OA*/
+				proc phreg data=oa_hip_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+			/*Hip OA*/
+				proc phreg data=oa_hip_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+	/*Sleeplessness/insomnia*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_hip_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_hip_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+	/*Sleep duration*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_hip_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_hip_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat (ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_hipOA*hip_dx(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
+
+
+data oa_tka_nopain;
+	merge shift.tka_to_use_sleep (IN=A) ukb.hipkneepain (IN=B);
+	by n_eid;
+	if A;
+	if n_3773_0_0=1 then delete; /*N=78193 excluded*/
+	run;
+
+proc freq data=oa_tka_nopain;
+	tables TKA; /*7928 TKA diagnoses remain*/
+	run;
+
+/*Morning/evening person (chronotype)*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_tka_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_tka_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat(ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+	/*Sleeplessness/insomnia*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_tka_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_tka_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat (ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+		/*Sleep duration*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_tka_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_tka_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat (ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_TKA*TKA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
+
+/***THA***/
+data oa_tha_nopain;
+	merge shift.tha_to_use_sleep (IN=A) ukb.hipkneepain (IN=B);
+	by n_eid;
+	if A;
+	if n_3414_0_0=1 then delete; /*N=38965 excluded*/
+	run;
+
+proc freq data=oa_tha_nopain;
+	tables THA; /*12039 THA diagnoses remain*/
+	run;
+
+	/*Morning/evening person (chronotype)*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_tha_nopain;
+				class gender(ref="0") racecat(ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") mepc(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 mepc/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_tha_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat (ref='1') mepc(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat mepc/RL  TIES=EFRON;
+				run;
+
+	/*Sleeplessness/insomnia*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_tha_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sl_in/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_tha_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat (ref='1') sl_in(ref='1')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sl_in/RL  TIES=EFRON;
+				run;
+
+		/*Sleep duration*/
+		/*Models not adjusted for BMI*/
+				proc phreg data=oa_tha_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 sleep_dur/RL  TIES=EFRON;
+				run;
+		/*Models adjusted for BMI*/
+				proc phreg data=oa_tha_nopain;
+				class gender (ref="0") racecat (ref="1") edcat(ref='1') manwork1(ref="1") standwork1(ref="1") bmicat (ref='1') sleep_dur(ref='7')/ param=ref order=internal;
+				model years_fu_THA*THA(0) = age_enroll gender racecat edcat townsend manwork1 standwork1 bmicat sleep_dur/RL  TIES=EFRON;
+				run;
