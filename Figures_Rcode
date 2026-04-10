@@ -1,0 +1,712 @@
+### Manuscript Graphing Program
+### Abigail Bridgeman, Dr. Elizabeth Yanik
+### Last Update: 1/10/2025
+
+# Downloaded Packages
+library(readr)
+library(ggplot2)
+library(gridExtra)
+library(gtable)
+
+
+
+# ______________________________________________________________________________
+# Figure 1 (F1)
+# Shift work associations with OA outcomes stratified by chronotype. All 
+# associations adjusted for age, sex, education, race, Townsend Deprivation 
+# Index, and frequency of manual/physical labor, frequency of occupational walking/standing.
+
+# Section Table of Contents
+# F1S1: Knee OA No BMI Adjustment
+# F1S2: TKA No BMI Adjustment
+# F1S3: Knee OA with BMI Adjustment
+# F1S4: TKA with BMI Adjustment
+# F1S5: Figure Formatting
+
+
+
+# Section 1 : Knee OA No BMI Adjustment
+
+# F1S1 Data Input
+knee_oa_no_BMI <- read.csv("koa_chrono_nb_rfile.csv")
+knee_oa_no_BMI$Shift.Type = factor(knee_oa_no_BMI$Shift.Type, levels = c("Only day shifts", 
+                                                                         "Night shifts"), ordered = TRUE)
+
+# F1S1 Base Data
+F1S1_base_ggplot_koa_nb <- ggplot(knee_oa_no_BMI, aes(shape = Shift.Type, color = Shift.Type, 
+                                                 x = chrono, y = Hazard.Ratio, 
+                                                 ymin = Hazard.Ratio - lower, 
+                                                 ymax = Hazard.Ratio + upper))
+
+# F1S1 Pointrange Graph Type
+F1S1_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F1S1 Axes Labels
+F1S1_axes_labels <- labs(x = "Self-Reported Chronotype",
+                    y = "Hazard Ratio")
+
+# F1S1 Graph Theme
+F1S1_back_graph <- theme_classic()
+
+# F1S1 Legend Title
+F1S1_base_ggplot_koa_nb$labels$colour <- "Type of Shift Work"
+F1S1_base_ggplot_koa_nb$labels$shape <- "Type of Shift Work"
+
+# F1S1 Reorder Variables
+F1S1_reorder <- scale_x_discrete(limits = c("Definitely a morning person", 
+                                       "More a morning than evening person",
+                                       "More an evening than a morning person", 
+                                       "Definitely an evening person"), labels = label_wrap_gen(20))
+
+# F1S1 Plot Title
+F1S1_plot_title <- ggtitle("A")
+
+# F1S1 Line Colors
+F1S1_line_color <- scale_color_manual(values=c('#DC8C00','#3B2477'))
+
+# F1S1 Reference Line
+F1S1_hline <- geom_hline(yintercept = 1)
+
+# F1S1 Set Y Axis
+F1S1_ylim <- ylim(0.35,2)
+
+# F1S1 Final Graph
+F1_p1 <- F1S1_base_ggplot_koa_nb + F1S1_clustered_pointrange + F1S1_axes_labels + 
+  F1S1_back_graph + F1S1_reorder + F1S1_plot_title + F1S1_line_color + F1S1_hline + F1S1_ylim
+
+
+
+# Section 2 : TKA No BMI Adjustment
+
+# F1S2 Data Input
+tka_no_BMI <- read.csv("tka_chrono_nb_rfile.csv")
+tka_no_BMI$Shift.Type = factor(tka_no_BMI$Shift.Type, levels = c("Only day shifts", 
+                                                                 "Night shifts"), ordered = TRUE)
+
+# F1S2 Base Data
+F1S2_base_ggplot_tka_nb <- ggplot(tka_no_BMI, aes(shape = Shift.Type, color = Shift.Type, 
+                                             x = chrono, y = Hazard.Ratio, 
+                                             ymin = Hazard.Ratio - lower, 
+                                             ymax = Hazard.Ratio + upper))
+
+# F1S2 Pointrange Graph Type
+F1S2_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F1S2 Axes Labels
+F1S2_axes_labels <- labs(x = "Self-Reported Chronotype",
+                    y = "Hazard Ratio")
+
+# F1S2 Graph Theme
+F1S2_back_graph <- theme_classic()
+
+# F1S2 Legend Title
+F1S2_base_ggplot_tka_nb$labels$colour <- "Type of Shift Work"
+F1S2_base_ggplot_tka_nb$labels$shape <- "Type of Shift Work"
+
+# F1S2 Reorder Variables
+F1S2_reorder <- scale_x_discrete(limits = c("Definitely a morning person", 
+                                       "More a morning than evening person",
+                                       "More an evening than a morning person", 
+                                       "Definitely an evening person"), labels = label_wrap_gen(20))
+
+# F1S2 Plot Title
+F1S2_plot_title <- ggtitle("B")
+
+# F1S2 Line Colors
+F1S2_line_color <- scale_color_manual(values=c('#DC8C00','#3B2477'))
+
+# F1S2 Reference Line
+F1S2_hline <- geom_hline(yintercept = 1)
+
+# F1S2 Set Y Axis
+F1S2_ylim <- ylim(0.35,2)
+
+# F1S2 Remove Legend
+F1S2_legend <- theme(legend.position="none")
+
+# F1S2 Final Graph
+F1_p2 <- F1S2_base_ggplot_tka_nb + F1S2_clustered_pointrange + F1S2_axes_labels + 
+  F1S2_back_graph + F1S2_reorder + F1S2_plot_title + F1S2_line_color + F1S2_hline + 
+  F1S2_ylim + F1S2_legend
+
+
+
+# Section 3 : Knee OA with BMI Adjustment
+
+# F1S3 Data Input
+knee_oa_BMI_adjusted <- read.csv("koa_chrono_ba_rfile.csv")
+knee_oa_BMI_adjusted$Shift.Type = factor(knee_oa_BMI_adjusted$Shift.Type, levels = c("Only day shifts", 
+                                                                                     "Night shifts"), ordered = TRUE)
+
+# F1S3 Base Data
+F1S3_base_ggplot_koa_ba <- ggplot(knee_oa_BMI_adjusted, aes(shape = Shift.Type, color = Shift.Type, 
+                                                       x = chrono, y = Hazard.Ratio, 
+                                                       ymin = Hazard.Ratio - lower, 
+                                                       ymax = Hazard.Ratio + upper))
+
+# F1S3 Pointrange Graph Type
+F1S3_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F1S3 Axes Labels
+F1S3_axes_labels <- labs(x = "Self-Reported Chronotype",
+                    y = "Hazard Ratio")
+
+# F1S3 Graph Theme
+F1S3_back_graph <- theme_classic()
+
+# F1S3 Legend Title
+F1S3_base_ggplot_koa_ba$labels$colour <- "Type of Shift Work"
+F1S3_base_ggplot_koa_ba$labels$shape <- "Type of Shift Work"
+
+# F1S3 Reorder Variables
+F1S3_reorder <- scale_x_discrete(limits = c("Definitely a morning person", 
+                                       "More a morning than evening person",
+                                       "More an evening than a morning person", 
+                                       "Definitely an evening person"), labels = label_wrap_gen(20))
+
+# F1S3 Plot Title
+F1S3_plot_title <- ggtitle("C")
+
+# F1S3 Line Colors
+F1S3_line_color <- scale_color_manual(values=c('#DC8C00','#3B2477'))
+
+# F1S3 Reference Line
+F1S3_hline <- geom_hline(yintercept = 1)
+
+# F1S3 Set Y Axis
+F1S3_ylim <- ylim(0.35,2)
+
+# F1S3 Remove Legend
+F1S3_legend <- theme(legend.position="none")
+
+# F1S3 Final Graph
+F1_p3 <- F1S3_base_ggplot_koa_ba + F1S3_clustered_pointrange + F1S3_axes_labels + 
+  F1S3_back_graph + F1S3_reorder + F1S3_plot_title + F1S3_line_color + F1S3_hline +
+  F1S3_ylim + F1S3_legend
+
+
+
+# Section 4 : TKA with BMI Adjustment
+
+# F1S4 Data Input
+tka_BMI_adjusted <- read.csv("tka_chrono_ba_rfile.csv")
+tka_BMI_adjusted$Shift.Type = factor(tka_BMI_adjusted$Shift.Type, levels = c("Only day shifts", 
+                                                                             "Night shifts"), ordered = TRUE)
+
+# F1S4 Base Data
+F1S4_base_ggplot_tka_ba <- ggplot(tka_BMI_adjusted, aes(shape = Shift.Type, color = Shift.Type, 
+                                                   x = chrono, 
+                                                   y = Hazard.Ratio, 
+                                                   ymin = Hazard.Ratio - lower, 
+                                                   ymax = Hazard.Ratio + upper))
+
+# F1S4 Pointrange Graph Type
+F1S4_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F1S4 Axes Labels
+F1S4_axes_labels <- labs(x = "Self-Reported Chronotype",
+                    y = "Hazard Ratio")
+
+# F1S4 Graph Theme
+F1S4_back_graph <- theme_classic()
+
+# F1S4 Legend Title
+F1S4_base_ggplot_tka_ba$labels$colour <- "Type of Shift Work"
+F1S4_base_ggplot_tka_ba$labels$shape <- "Type of Shift Work"
+
+# F1S4 Reorder Variables
+F1S4_reorder <- scale_x_discrete(limits = c("Definitely a morning person", 
+                                       "More a morning than evening person",
+                                       "More an evening than a morning person", 
+                                       "Definitely an evening person"), labels = label_wrap_gen(20))
+
+# F1S4 Plot Title
+F1S4_plot_title <- ggtitle("D")
+
+# F1S4 Line Colors
+F1S4_line_color <- scale_color_manual(values=c('#DC8C00','#3B2477'))
+
+# F1S4 Reference Line
+F1S4_hline <- geom_hline(yintercept = 1)
+
+# F1S4 Set Y Axis
+F1S4_ylim <- ylim(0.35,2)
+
+# F1S4 Remove Legend
+F1S4_legend <- theme(legend.position="none")
+
+# F1S4 Final Graph
+F1_p4 <- F1S4_base_ggplot_tka_ba + F1S4_clustered_pointrange + F1S4_axes_labels + F1S4_back_graph + 
+  F1S4_reorder + F1S4_plot_title + F1S4_line_color + F1S4_hline + F1S4_ylim + F1S4_legend
+
+
+
+# Section 5 : Figure Formatting
+# Code courtesey of https://www.rdocumentation.org/packages/lemon/versions/0.4.9/topics/g_legend
+F1_legend2 <- gtable_filter(ggplotGrob(F1_p1), 'guide-box')
+grid.arrange(F1_p1  + theme(legend.position='hidden'),
+             F1_p2 + theme(legend.position='hidden'), F1_p3 + theme(legend.position='hidden'), 
+             F1_p4 + theme(legend.position='hidden'), right=F1_legend2$grobs[[1]]$grobs[[1]])
+
+
+
+# ______________________________________________________________________________
+# Figure 2 (F2)
+# Shift work associations with knee OA outcomes stratified by frequency of heavy
+# physical work. All associations adjusted for age, sex, education, race, and 
+# Townsend Deprivation Index.
+
+# Data Source Path
+# Shift Work Analysis -> Abi -> R Data Files -> manwork -> knee
+
+# Section Table of Contents
+# F1S1: Knee OA No BMI Adjustment
+# F1S2: TKA No BMI Adjustment
+# F1S3: Knee OA with BMI Adjustment
+# F1S4: TKA with BMI Adjustment
+# F1S5: Figure Formatting
+
+
+
+# Section 1 : Knee OA No BMI Adjustment
+
+# F2S1 Data Input
+knee_oa_no_BMI <- read.csv("koa_nb_rfile.csv")
+
+# F2S1 Base Data
+F2S1_base_ggplot_koa_nb <- ggplot(knee_oa_no_BMI, aes(shape = Shift.Type, color = Shift.Type, 
+                                                 x = manwork1, y = Hazard.Ratio, 
+                                                 ymin = Hazard.Ratio - lower, 
+                                                 ymax = Hazard.Ratio + upper))
+
+# F2S1 Pointrange Graph Type
+F2S1_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F2S1 Axes Labels
+F2S1_axes_labels <- labs(x = "Job Involves Heavy Manual or Physical Work",
+                    y = "Hazard Ratio")
+
+# F2S1 Graph Theme
+F2S1_back_graph <- theme_classic()
+
+# F2S1 Legend Title
+F2S1_base_ggplot_koa_nb$labels$colour <- "Type of Shift Work"
+F2S1_base_ggplot_koa_nb$labels$shape <- "Type of Shift Work"
+
+# F2S1 Reorder Variables
+F2S1_reorder <- scale_x_discrete(limits = c("None/Rarely", "Sometimes", "Usually", 
+                                       "Always"))
+# F2S1 Plot Title
+F2S1_plot_title <- ggtitle("A")
+
+# F2S1 Reference Line
+F2S1_hline <- geom_hline(yintercept = 1)
+
+# F2S1 Set Y Axis
+F2S1_ylim <- ylim(0.5,2)
+
+# F2S1 Final Graph
+F2_p1 <- F2S1_base_ggplot_koa_nb + F2S1_clustered_pointrange + F2S1_axes_labels + F2S1_back_graph + 
+  F2S1_reorder + F2S1_plot_title + F2S1_hline + F2S1_ylim
+
+
+
+# Section 2 : TKA No BMI Adjustment
+
+# F2S2 Data Input
+tka_no_BMI <- read.csv("tka_nb_rfile.csv")
+
+# F2S2 Base Data
+F2S2_base_ggplot_tka_nb <- ggplot(tka_no_BMI, aes(shape = Shift.Type, color = Shift.Type, 
+                                             x = manwork1, y = Hazard.Ratio, 
+                                             ymin = Hazard.Ratio - lower, 
+                                             ymax = Hazard.Ratio + upper))
+
+# F2S2 Pointrange Graph Type
+F2S2_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F2S2 Axes Labels
+F2S2_axes_labels <- labs(x = "Job Involves Heavy Manual or Physical Work",
+                    y = "Hazard Ratio")
+
+# F2S2 Graph Theme
+F2S2_back_graph <- theme_classic()
+
+# F2S2 Legend Title
+F2S2_base_ggplot_tka_nb$labels$colour <- "Type of Shift Work"
+F2S2_base_ggplot_tka_nb$labels$shape <- "Type of Shift Work"
+
+# F2S2 Reorder Variables
+F2S2_reorder <- scale_x_discrete(limits = c("None/Rarely", "Sometimes", "Usually", 
+                                       "Always"))
+# F2S2 Plot Title
+F2S2_plot_title <- ggtitle("B")
+
+# F2S2 Reference Line
+F2S2_hline <- geom_hline(yintercept = 1)
+
+# F2S2 Set Y Axis
+F2S2_ylim <- ylim(0.5,2)
+
+# F2S2 Remove Legend
+F2S2_legend <- theme(legend.position="none")
+
+# F2S2 Final Graph
+F2_p2 <- F2S2_base_ggplot_tka_nb + F2S2_clustered_pointrange + F2S2_axes_labels + F2S2_back_graph + 
+  F2S2_reorder + F2S2_plot_title + F2S2_hline + F2S2_ylim + F2S2_legend
+
+
+
+# Section 3 : Knee OA with BMI Adjustment
+
+# F2S3 Data Input
+knee_oa_BMI_adjusted <- read.csv("koa_ba_rfile.csv")
+
+# F2S3 Base Data
+F2S3_base_ggplot_koa_ba <- ggplot(knee_oa_BMI_adjusted, aes(shape = Shift.Type, color = Shift.Type, 
+                                                       x = manwork1, y = Hazard.Ratio, 
+                                                       ymin = Hazard.Ratio - lower, 
+                                                       ymax = Hazard.Ratio + upper))
+
+# F2S3 Pointrange Graph Type
+F2S3_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+#axes labels
+F2S3_axes_labels <- labs(x = "Job Involves Heavy Manual or Physical Work",
+                    y = "Hazard Ratio")
+
+# F2S3 Graph Theme
+F2S3_back_graph <- theme_classic()
+
+# F2S3 Legend Title
+F2S3_base_ggplot_koa_ba$labels$colour <- "Type of Shift Work"
+F2S3_base_ggplot_koa_ba$labels$shape <- "Type of Shift Work"
+
+# F2S3 Reorder Variables
+F2S3_reorder <- scale_x_discrete(limits = c("None/Rarely", "Sometimes", "Usually", 
+                                       "Always"))
+# F2S3 Plot Title
+F2S3_plot_title <- ggtitle("C")
+
+# F2S3 Reference Line
+F2S3_hline <- geom_hline(yintercept = 1)
+
+# F2S3 Set Y Axis
+F2S3_ylim <- ylim(0.5,2)
+
+# F2S3 Remove Legend
+F2S3_legend <- theme(legend.position="none")
+
+# F2S3 Final Graph
+F2_p3 <- F2S3_base_ggplot_koa_ba + F2S3_clustered_pointrange + F2S3_axes_labels + F2S3_back_graph + 
+  F2S3_reorder + F2S3_plot_title + F2S3_hline + F2S3_ylim + F2S3_legend
+
+
+
+# Section 4 : TKA with BMI Adjustment
+
+# F2S4 Data Input
+tka_BMI_adjusted <- read.csv("tka_ba_rfile.csv")
+
+# F2S4 Base Data
+F2S4_base_ggplot_tka_ba <- ggplot(tka_BMI_adjusted, aes(shape = Shift.Type, color = Shift.Type, 
+                                                   x = manwork1, 
+                                                   y = Hazard.Ratio, 
+                                                   ymin = Hazard.Ratio - lower, 
+                                                   ymax = Hazard.Ratio + upper))
+
+# F2S4 Pointrange Graph Type
+F2S4_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F2S4 Axes Labels
+F2S4_axes_labels <- labs(x = "Job Involves Heavy Manual or Physical Work",
+                    y = "Hazard Ratio")
+
+# F2S4 Graph Theme
+F2S4_back_graph <- theme_classic()
+
+# F2S4 Legend Title
+F2S4_base_ggplot_tka_ba$labels$colour <- "Type of Shift Work"
+F2S4_base_ggplot_tka_ba$labels$shape <- "Type of Shift Work"
+
+# F2S4 Reorder Variables
+F2S4_reorder <- scale_x_discrete(limits = c("None/Rarely", "Sometimes", "Usually", 
+                                       "Always"))
+# F2S4 Plot Title
+F2S4_plot_title <- ggtitle("D")
+
+# F2S4 Reference Line
+F2S4_hline <- geom_hline(yintercept = 1)
+
+# F2S4 Set Y Axis
+F2S4_ylim <- ylim(0.5,2)
+
+# F2S4 Remove Legend
+F2S4_legend <- theme(legend.position="none")
+
+# F2S4 Final Graph
+F2_p4 <- F2S4_base_ggplot_tka_ba + F2S4_clustered_pointrange + F2S4_axes_labels + F2S4_back_graph + 
+  F2S4_reorder + F2S4_plot_title + F2S4_hline + F2S4_ylim + F2S4_legend
+
+
+
+# Section 5 : Figure Formatting
+# Code courtesy of https://www.rdocumentation.org/packages/lemon/versions/0.4.9/topics/g_legend
+F2_legend2 <- gtable_filter(ggplotGrob(F2_p1), 'guide-box')
+grid.arrange(F2_p1  + theme(legend.position='hidden'),
+             F2_p2 + theme(legend.position='hidden'), F2_p3 + theme(legend.position='hidden'), 
+             F2_p4 + theme(legend.position='hidden'), right=F2_legend2$grobs[[1]]$grobs[[1]])
+
+
+
+# ______________________________________________________________________________
+# Figure 3 (F3)
+# Sleep duration associations with OA outcomes stratified by shift work type. 
+# Results limited to those not adjusted for BMI
+
+# Data Source Path
+# Shift Work Analysis -> Abi -> R Data Files -> shiftcat+sleep_dur_interaction
+
+# Section Table of Contents
+# F3S1: Data Prepping
+# F3S2_1: Knee OA No BMI Adjustment
+# F3S2_2: TKA No BMI Adjustment
+# F3S2_3: Knee OA with BMI Adjustment
+# F3S2_4: TKA with BMI Adjustment
+# F3S2: Individual Graphs
+# F3S2_1: Knee OA No BMI Adjustment
+# F3S2_2: TKA No BMI Adjustment
+# F3S2_3: Knee OA with BMI Adjustment
+# F3S2_4: TKA with BMI Adjustment
+# F3S31: Figure Formatting
+
+
+
+# Section 1 : Data Prepping
+
+# F3S1 Data Input
+slshc_LY <- read.csv('slshc_LY.csv')
+
+slshc_LY$Trait.Group[slshc_LY$Trait.Group=="9"] <- "9+"
+slshc_LY$Trait.Group[slshc_LY$Trait.Group=="5"] <- "<=5"
+
+# F3S1 Split into Outcome Subsets
+split_2 <- split(slshc_LY, f=slshc_LY$Outcome)
+nb_koa <- split_2[[2]]
+nb_hoa <- split_2[[1]]
+nb_tka <- split_2[[4]]
+nb_tha <- split_2[[3]]
+
+# F3S1 Knee OA without BMI adjustment Shift Split
+split_4 <- split(nb_koa, f=nb_koa$Shift.work)
+nb_koa_no <- split_4[[3]]
+nb_koa_day <- split_4[[1]]
+nb_koa_night <- split_4[[2]]
+
+# F3S1 TKA without BMI adjustment Shift Split
+split_5 <- split(nb_tka, f=nb_tka$Shift.work)
+nb_tka_no <- split_5[[3]]
+nb_tka_day <- split_5[[1]]
+nb_tka_night <- split_5[[2]]
+
+# F3S1 Hip OA without BMI adjustment Shift Split
+split_6 <- split(nb_hoa, f=nb_hoa$Shift.work)
+nb_hoa_no <- split_6[[3]]
+nb_hoa_day <- split_6[[1]]
+nb_hoa_night <- split_6[[2]]
+
+# F3S1 THA without BMI adjustment Shift Split
+split_7 <- split(nb_tha, f=nb_tha$Shift.work)
+nb_tha_no <- split_7[[3]]
+nb_tha_day <- split_7[[1]]
+nb_tha_night <- split_7[[2]]
+
+
+
+# Section 2 : Individual Graphs
+
+# Subsection 1 : KOA No BMI Adjustment
+
+# F2S4 Data Input
+nb_koa$Shift.work = factor(nb_koa$Shift.work, levels = c("No Shift", 
+                                                         "Day Shift", "Night Shift"), ordered = TRUE)
+
+# F3S2S1 Base Data
+F3S2S1_base_ggplot_koa_no <- ggplot(nb_koa, aes(shape =nb_koa$'Shift.work', color =nb_koa$'Shift.work', 
+                                         x =Trait.Group, y = Beta, 
+                                         ymin = Beta - Lower, 
+                                         ymax = Beta + Upper))
+
+# F3S2S1 Pointrange Graph Type
+F3S2S1_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F3S2S1 Axes Labels
+F3S2S1_axes_labels <- labs(x = "Sleep Duration in hours",
+                    y = "Hazard Ratio")
+
+# F3S2S1 Graph Theme
+F3S2S1_back_graph <- theme_classic()
+
+# F3S2S1 Legend Title
+F3S2S1_base_ggplot_koa_no$labels$colour <- "Type of Shift Work"
+F3S2S1_base_ggplot_koa_no$labels$shape <- "Type of Shift Work"
+
+# F3S2S1 Plot Title
+F3S2S1_plot_title <- ggtitle("A: Knee OA")
+
+# F3S2S1 Reference Line
+F3S2S1_hline <- geom_hline(yintercept = 1)
+
+# F3S2S1 Set Y Axis
+F3S2S1_ylim <- ylim(0.5,3)
+
+# F3S2S1 Line Colors
+F3S2S1_line_color <- scale_color_manual(values=c('#3772FF','#FF1B1C', '#33CC00'))
+
+# F3S2S1 Final Graph
+F3_p1 <- F3S2S1_base_ggplot_koa_no + F3S2S1_clustered_pointrange + F3S2S1_axes_labels + 
+  F3S2S1_back_graph + F3S2S1_plot_title + F3S2S1_line_color + F3S2S1_hline + F3S2S1_ylim
+
+print(F3_p1)
+
+
+# Subsection 2 : TKA No BMI Adjustment
+
+# F3S2S2 Data Input
+nb_tka$Shift.work = factor(nb_tka$Shift.work, levels = c("No Shift", 
+                                                         "Day Shift", "Night Shift"), ordered = TRUE)
+
+# F3S2S2 Base Data
+F3S2S2_base_ggplot_tka_no <- ggplot(nb_tka, aes(shape =nb_tka$'Shift.work', color =nb_tka$'Shift.work', 
+                                         x =Trait.Group, y = Beta, 
+                                         ymin = Beta - Lower, 
+                                         ymax = Beta + Upper))
+
+# F3S2S2 Pointrange Graph Type
+F3S2S2_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F3S2S2 Axes Labels
+F3S2S2_axes_labels <- labs(x = "Sleep Duration in hours",
+                    y = "Hazard Ratio")
+
+# F3S2S2 Graph Theme
+F3S2S2_back_graph <- theme_classic()
+
+# F3S2S2 Legend Title
+F3S2S2_base_ggplot_tka_no$labels$colour <- "Type of Shift Work"
+F3S2S2_base_ggplot_tka_no$labels$shape <- "Type of Shift Work"
+
+# F3S2S2 Reference Line
+F3S2S2_hline <- geom_hline(yintercept = 1)
+
+# F3S2S2 Set Y Axis
+F3S2S2_ylim <- ylim(0.5,3)
+
+# F3S2S2 Plot Title
+F3S2S2_plot_title <- ggtitle("B: TKA")
+
+# F3S2S2 Line Colors
+F3S2S2_line_color <- scale_color_manual(values=c('#3772FF','#FF1B1C', '#33CC00'))
+
+# F3S2S2 Final Graph
+F3_p2 <- F3S2S2_base_ggplot_tka_no + F3S2S2_clustered_pointrange + F3S2S2_axes_labels + 
+  F3S2S2_back_graph + F3S2S2_plot_title + F3S2S2_line_color + F3S2S2_hline + F3S2S2_ylim
+
+print(F3_p2)
+
+
+# Subsection 3 : HOA No BMI Adjustment
+
+# F3S2S3 Data Input
+nb_hoa$Shift.work = factor(nb_hoa$Shift.work, levels = c("No Shift", 
+                                                         "Day Shift", "Night Shift"), ordered = TRUE)
+
+# F3S2S3 Base Data
+F3S2S3_base_ggplot_hoa_no <- ggplot(nb_hoa, aes(shape =nb_hoa$'Shift.work', color =nb_hoa$'Shift.work', 
+                                         x =Trait.Group, y = Beta, 
+                                         ymin = Beta - Lower, 
+                                         ymax = Beta + Upper))
+
+# F3S2S3 Pointrange Graph Type
+F3S2S3_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F3S2S3 Axes Labels
+F3S2S3_axes_labels <- labs(x = "Sleep Duration in hours",
+                    y = "Hazard Ratio")
+
+# F3S2S3 Graph Theme
+F3S2S3_back_graph <- theme_classic()
+
+# F3S2S3 Legend Title
+F3S2S3_base_ggplot_hoa_no$labels$colour <- "Type of Shift Work"
+F3S2S3_base_ggplot_hoa_no$labels$shape <- "Type of Shift Work"
+
+# F3S2S3 Reference Line
+F3S2S3_hline <- geom_hline(yintercept = 1)
+
+# F3S2S3 Set Y Axis
+F3S2S3_ylim <- ylim(0.5,3)
+
+# F3S2S3 Plot Title
+F3S2S3_plot_title <- ggtitle("C: Hip OA")
+
+# F3S2S3 Line Colors
+F3S2S3_line_color <- scale_color_manual(values=c('#3772FF','#FF1B1C', '#33CC00'))
+
+# F3S2S3 Final Graph
+F3_p3 <- F3S2S3_base_ggplot_hoa_no + F3S2S3_clustered_pointrange + F3S2S3_axes_labels + 
+  F3S2S3_back_graph + F3S2S3_plot_title + F3S2S3_line_color + F3S2S3_hline + F3S2S3_ylim
+
+print(F3_p3)
+
+
+# Subsection 4 : THA No BMI Adjustment
+
+# F3S2S4 Data Input
+nb_tha$Shift.work = factor(nb_tha$Shift.work, levels = c("No Shift", 
+                                                         "Day Shift", "Night Shift"), ordered = TRUE)
+
+# F3S2S4 Base Data
+F3S2S4_base_ggplot_tha_no <- ggplot(nb_tha, aes(shape =nb_tha$'Shift.work', color =nb_tha$'Shift.work', 
+                                         x =Trait.Group, y = Beta, 
+                                         ymin = Beta - Lower, 
+                                         ymax = Beta + Upper))
+
+# F3S2S4 Pointrange Graph Type
+F3S2S4_clustered_pointrange <- geom_pointrange(position = position_dodge2(width = 0.5))
+
+# F3S2S4 Axes Labels
+F3S2S4_axes_labels <- labs(x = "Sleep Duration in hours",
+                    y = "Hazard Ratio")
+
+# F3S2S4 Graph Theme
+F3S2S4_back_graph <- theme_classic()
+
+# F3S2S4 Legend Title
+F3S2S4_base_ggplot_tha_no$labels$colour <- "Type of Shift Work"
+F3S2S4_base_ggplot_tha_no$labels$shape <- "Type of Shift Work"
+
+# F3S2S4 Reference Line
+F3S2S4_hline <- geom_hline(yintercept = 1)
+
+# F3S2S4 Set Y Axis
+F3S2S4_ylim <- ylim(0.5,3)
+
+# F3S2S4 Plot Title
+F3S2S4_plot_title <- ggtitle("D: THA")
+
+# F3S2S4 Line Colors
+F3S2S4_line_color <- scale_color_manual(values=c('#3772FF','#FF1B1C', '#33CC00'))
+
+# F3S2S4 Final Graph
+F3_p4 <- F3S2S4_base_ggplot_tha_no + F3S2S4_clustered_pointrange + F3S2S4_axes_labels + 
+  F3S2S4_back_graph + F3S2S4_plot_title + F3S2S4_line_color + F3S2S4_hline + F3S2S4_ylim
+print(F3_p4)
+
+
+# Section 3 : Figure Formatting
+# Code courtesey of https://www.rdocumentation.org/packages/lemon/versions/0.4.9/topics/g_legend
+F3_legend2 <- gtable_filter(ggplotGrob(F3_p1), 'guide-box')
+grid.arrange(F3_p1  + theme(legend.position='hidden'),
+             F3_p2 + theme(legend.position='hidden'), F3_p3 + theme(legend.position='hidden'), 
+             F3_p4 + theme(legend.position='hidden'), right=F3_legend2$grobs[[1]]$grobs[[1]])
